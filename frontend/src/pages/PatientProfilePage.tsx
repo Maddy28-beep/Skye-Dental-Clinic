@@ -40,6 +40,7 @@ export function PatientProfilePage() {
   const [showEdit, setShowEdit] = useState(false);
   const [showNewTreatment, setShowNewTreatment] = useState(false);
   const [showNewPayment, setShowNewPayment] = useState(false);
+  const [paymentPresetTreatmentId, setPaymentPresetTreatmentId] = useState<string | undefined>(undefined);
   const [verifyingPayment, setVerifyingPayment] = useState<Payment | null>(null);
   const { session } = useSession();
 
@@ -164,7 +165,17 @@ export function PatientProfilePage() {
                 <EmptyState title="No treatments recorded" description="Add the patient's first treatment or procedure." action={<Button onClick={() => setShowNewTreatment(true)}>Add Treatment</Button>} />
               </div>
             ) : (
-              <TreatmentTable treatments={treatments} />
+              <TreatmentTable
+                treatments={treatments}
+                onStatusChange={async (t, status) => {
+                  await treatmentsApi.update(t.id, { status, recorded_by: session.name, role: session.role });
+                  loadTreatments();
+                }}
+                onRecordPayment={(t) => {
+                  setPaymentPresetTreatmentId(t.id);
+                  setShowNewPayment(true);
+                }}
+              />
             )}
           </CardBody>
         </Card>
@@ -227,13 +238,27 @@ export function PatientProfilePage() {
         />
       </Modal>
 
-      <Modal open={showNewPayment} onClose={() => setShowNewPayment(false)} title="Record Payment" size="md">
+      <Modal
+        open={showNewPayment}
+        onClose={() => {
+          setShowNewPayment(false);
+          setPaymentPresetTreatmentId(undefined);
+        }}
+        title="Record Payment"
+        size="md"
+      >
         <PaymentForm
           treatments={treatments ?? []}
-          onCancel={() => setShowNewPayment(false)}
+          payments={payments ?? []}
+          initialTreatmentId={paymentPresetTreatmentId}
+          onCancel={() => {
+            setShowNewPayment(false);
+            setPaymentPresetTreatmentId(undefined);
+          }}
           onSubmit={async (data) => {
             await paymentsApi.create({ ...data, patient_id: id, recorded_by: session.name, role: session.role });
             setShowNewPayment(false);
+            setPaymentPresetTreatmentId(undefined);
             loadPayments();
           }}
         />

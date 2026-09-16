@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PaymentMethod, Treatment } from '../../types';
+import type { Payment, PaymentMethod, Treatment } from '../../types';
 import { Button } from '../common/Button';
 import { formatCurrency } from '../../lib/format';
 
@@ -17,22 +17,37 @@ const METHODS: { value: PaymentMethod; label: string }[] = [
 
 interface PaymentFormProps {
   treatments: Treatment[];
+  payments: Payment[];
+  initialTreatmentId?: string;
   onSubmit: (data: { treatment_id: string | null; amount_due: number; amount_paid: number; payment_method: PaymentMethod }) => Promise<void>;
   onCancel: () => void;
 }
 
-export function PaymentForm({ treatments, onSubmit, onCancel }: PaymentFormProps) {
-  const [treatmentId, setTreatmentId] = useState('');
-  const [amountDue, setAmountDue] = useState('');
+export function PaymentForm({ treatments, payments, initialTreatmentId, onSubmit, onCancel }: PaymentFormProps) {
+  // Remaining balance on a treatment accounts for whatever's already been recorded
+  // against it (pending or verified - money already handed over either way), so a
+  // second/installment payment doesn't re-show the full original cost.
+  function remainingFor(t: Treatment) {
+    const alreadyPaid = payments.filter((p) => p.treatment_id === t.id).reduce((sum, p) => sum + p.amount_paid, 0);
+    return Math.max(0, t.final_amount - alreadyPaid);
+  }
+
+  const initialTreatment = initialTreatmentId ? treatments.find((t) => t.id === initialTreatmentId) : undefined;
+
+  const [treatmentId, setTreatmentId] = useState(initialTreatmentId ?? '');
+  const [amountDue, setAmountDue] = useState(initialTreatment ? String(remainingFor(initialTreatment)) : '');
   const [amountPaid, setAmountPaid] = useState('');
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const selectedTreatment = treatmentId ? treatments.find((tr) => tr.id === treatmentId) : undefined;
+  const alreadySettled = !!selectedTreatment && remainingFor(selectedTreatment) === 0;
+
   function selectTreatment(id: string) {
     setTreatmentId(id);
     const t = treatments.find((tr) => tr.id === id);
-    if (t) setAmountDue(String(t.final_amount));
+    if (t) setAmountDue(String(remainingFor(t)));
   }
 
   const balance = Math.max(0, (Number(amountDue) || 0) - (Number(amountPaid) || 0));
@@ -67,10 +82,17 @@ export function PaymentForm({ treatments, onSubmit, onCancel }: PaymentFormProps
         <select className={FIELD_CLASS} value={treatmentId} onChange={(e) => selectTreatment(e.target.value)}>
           <option value="">General payment (no specific treatment)</option>
           {treatments.map((t) => (
-            <option key={t.id} value={t.id}>{t.procedure_name} &middot; {formatCurrency(t.final_amount)}</option>
+            <option key={t.id} value={t.id}>{t.procedure_name} &middot; {formatCurrency(remainingFor(t))} remaining</option>
           ))}
         </select>
+        <p className="mt-1.5 text-xs text-ink-400">Selecting a treatment fills in Amount Due automatically, using its cost minus anything already paid toward it.</p>
       </div>
+
+      {alreadySettled && (
+        <p className="rounded-xl bg-emerald-50 px-4 py-2.5 text-xs text-emerald-700">
+          This treatment already has a full payment recorded against it.
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
