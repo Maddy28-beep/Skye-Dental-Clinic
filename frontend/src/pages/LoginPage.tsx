@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { Stethoscope } from 'lucide-react';
 import { Button } from '../components/common/Button';
+import { IconMark } from '../components/brand/Logo';
 
 const FIELD_CLASS =
   'w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
@@ -31,13 +31,11 @@ export function LoginPage({
   return (
     <div className="flex min-h-screen items-center justify-center bg-ink-50 px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-white">
-            <Stethoscope size={22} />
-          </div>
+        <div className="mb-7 flex flex-col items-center gap-3 text-center">
+          <IconMark size={52} />
           <div>
             <h1 className="text-lg font-semibold text-ink-900">Skye Dental Clinic</h1>
-            <p className="text-sm text-ink-500">Clinic Monitoring System</p>
+            <p className="text-sm text-ink-500">Dental Clinic Management System</p>
           </div>
         </div>
 

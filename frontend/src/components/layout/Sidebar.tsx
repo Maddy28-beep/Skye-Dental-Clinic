@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
-import { Stethoscope } from 'lucide-react';
 import { NAV_ITEMS } from './navConfig';
+import { IconMark } from '../brand/Logo';
 
 export function Sidebar({
   collapsedLabels = false,
@@ -14,20 +14,15 @@ export function Sidebar({
     <div className="flex h-full flex-col bg-white">
       {collapsedLabels ? (
         <div className="flex h-16 shrink-0 items-center justify-center border-b border-ink-100 px-2">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white">
-            <Stethoscope size={18} />
-          </div>
+          <IconMark size={36} />
         </div>
       ) : (
-        <div className="shrink-0 border-b border-ink-100">
-          {/* Square source image (1254x1254) - object-contain keeps it uncropped; height
-              is capped so the logo doesn't dominate the sidebar. */}
-          <img
-            src="/skye%20logo.png"
-            alt="Skye Dental Clinic"
-            className="h-24 w-full object-contain py-2"
-          />
-          <p className="px-4 py-1.5 text-center text-[11px] font-medium tracking-wide text-ink-400">Clinic Monitoring System</p>
+        <div className="flex shrink-0 items-center gap-2.5 border-b border-ink-100 px-4 py-4">
+          <IconMark size={34} />
+          <div className="leading-tight">
+            <p className="text-sm font-semibold text-ink-900">Skye Dental Clinic</p>
+            <p className="text-[11px] font-medium tracking-wide text-ink-400">Clinic Monitoring System</p>
+          </div>
         </div>
       )}
 
