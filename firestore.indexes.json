@@ -29,6 +29,10 @@
       { "fieldPath": "status", "order": "ASCENDING" },
       { "fieldPath": "amount_paid", "order": "ASCENDING" }
     ]},
+    { "collectionGroup": "payments", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status", "order": "ASCENDING" },
+      { "fieldPath": "balance", "order": "ASCENDING" }
+    ]},
     { "collectionGroup": "consents", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "patient_id", "order": "ASCENDING" },
       { "fieldPath": "created_at", "order": "DESCENDING" }
