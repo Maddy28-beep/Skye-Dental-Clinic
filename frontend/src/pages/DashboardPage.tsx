@@ -12,12 +12,25 @@ import { useSession } from '../context/SessionContext';
 
 export function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { session } = useSession();
 
   useEffect(() => {
-    dashboardApi.summary().then(setSummary);
+    dashboardApi.summary().then(setSummary).catch((err) => {
+      console.error('Failed to load dashboard summary', err);
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard data.');
+    });
   }, []);
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        <p className="font-medium">Couldn't load the dashboard.</p>
+        <p className="mt-1">{error}</p>
+      </div>
+    );
+  }
 
   if (!summary) return <FullPageSpinner label="Loading dashboard..." />;
 
