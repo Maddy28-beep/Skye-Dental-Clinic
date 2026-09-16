@@ -25,7 +25,7 @@ export const toothChartApi = {
 
   record: (
     patientId: string,
-    data: Pick<ToothRecord, 'tooth_number' | 'condition' | 'existing_treatment' | 'planned_treatment' | 'notes' | 'dentist_id'> & {
+    data: Pick<ToothRecord, 'tooth_number' | 'conditions' | 'existing_treatment' | 'planned_treatment' | 'notes' | 'dentist_id'> & {
       recorded_by?: string;
       role?: string;
     }
@@ -41,7 +41,7 @@ export const toothChartApi = {
       logAudit({
         userName: recorded_by || 'Staff', role: role || 'dentist',
         action: 'update', entityType: 'tooth_record', entityId: created.id, patientId,
-        description: `Tooth #${data.tooth_number} updated to "${data.condition}"`,
+        description: `Tooth #${data.tooth_number} updated to "${data.conditions.join(', ')}"`,
       });
       return created;
     });

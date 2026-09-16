@@ -4,16 +4,31 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 // In production, set these via frontend/.env.local (VITE_FIREBASE_*) from your Firebase
-// project's web app config. The demo-* fallbacks below only work against the local
-// emulator suite (`firebase emulators:start`) - they are not real credentials.
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'demo-api-key',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'skye-dental-demo.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'skye-dental-demo',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'skye-dental-demo.appspot.com',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '000000000000',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:000000000000:web:0000000000000000000000',
-};
+// project's web app config. Vite loads .env.local in every mode (dev included), so once
+// it holds the real project's credentials they'd otherwise leak into `npm run dev` too -
+// pointing the local emulator at the real project's namespace instead of the seeded demo
+// one, even though the emulator connection itself still happens. Forcing the demo project
+// id whenever the emulator is in use keeps dev data isolated regardless of what's in
+// .env.local.
+const useEmulator = import.meta.env.VITE_USE_FIREBASE_EMULATOR !== 'false';
+
+const firebaseConfig = useEmulator
+  ? {
+      apiKey: 'demo-api-key',
+      authDomain: 'skye-dental-demo.firebaseapp.com',
+      projectId: 'skye-dental-demo',
+      storageBucket: 'skye-dental-demo.appspot.com',
+      messagingSenderId: '000000000000',
+      appId: '1:000000000000:web:0000000000000000000000',
+    }
+  : {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    };
 
 // Vite's dev server hot-reloads any module that changes, which re-runs this file's
 // top-level code on every edit - but initializeApp/initializeFirestore/connect*Emulator
@@ -40,7 +55,6 @@ function setup() {
   // Point every SDK at the local emulator suite unless explicitly told to use a real
   // project (VITE_USE_FIREBASE_EMULATOR=false), so `npm run dev` never touches production
   // data by accident.
-  const useEmulator = import.meta.env.VITE_USE_FIREBASE_EMULATOR !== 'false';
   if (useEmulator) {
     try {
       connectFirestoreEmulator(db, '127.0.0.1', 8080);

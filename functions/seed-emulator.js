@@ -120,18 +120,20 @@ async function main() {
     updated_at: new Date().toISOString(),
   });
 
-  async function addTooth(patientId, tooth, condition, existing, planned, notes, dentistId) {
+  async function addTooth(patientId, tooth, conditions, existing, planned, notes, dentistId) {
     const ref = db.collection('tooth_records').doc();
     await ref.set({
-      id: ref.id, patient_id: patientId, tooth_number: tooth, condition,
+      id: ref.id, patient_id: patientId, tooth_number: tooth, conditions,
       existing_treatment: existing, planned_treatment: planned, notes,
       dentist_id: dentistId, recorded_by: 'Ana Reyes', recorded_at: new Date().toISOString(),
     });
   }
-  await addTooth(juan, '36', 'decayed', null, 'Amalgam Filling', 'Patient reports sensitivity to cold.', drSantos);
-  await addTooth(juan, '46', 'amalgam_filling', 'Amalgam filling (2023)', null, null, drSantos);
-  await addTooth(maria, '11', 'jacket_crown', 'Porcelain jacket crown (2024)', null, 'Monitor for wear.', drReyes);
-  await addTooth(maria, '18', 'missing_other', null, null, 'Extracted prior to consult, unrelated to caries.', drReyes);
+  // Decayed + already-filled at once, to demonstrate a tooth carrying both a Condition
+  // code and a Restoration code simultaneously (they're different axes, not exclusive).
+  await addTooth(juan, '36', ['decayed', 'amalgam_filling'], 'Amalgam filling (2022), recurrent decay noted', 'Replace filling', 'Patient reports sensitivity to cold.', drSantos);
+  await addTooth(juan, '46', ['amalgam_filling'], 'Amalgam filling (2023)', null, null, drSantos);
+  await addTooth(maria, '11', ['jacket_crown'], 'Porcelain jacket crown (2024)', null, 'Monitor for wear.', drReyes);
+  await addTooth(maria, '18', ['missing_other'], null, null, 'Extracted prior to consult, unrelated to caries.', drReyes);
 
   await db.collection('dental_exams').doc(juan).set({
     id: juan, patient_id: juan,

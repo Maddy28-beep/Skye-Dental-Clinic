@@ -141,7 +141,10 @@ export interface ToothRecord {
   id: string;
   patient_id: string;
   tooth_number: string;
-  condition: ToothCondition;
+  // A tooth can carry more than one code at once - e.g. "Decayed" (Condition) and
+  // "Amalgam Filling" (Restoration) are different axes on the PDA chart, not mutually
+  // exclusive states. Kept as an array rather than a single value for that reason.
+  conditions: ToothCondition[];
   existing_treatment: string | null;
   planned_treatment: string | null;
   notes: string | null;

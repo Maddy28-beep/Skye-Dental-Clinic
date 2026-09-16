@@ -74,7 +74,7 @@ export function ToothChart({ patientId }: { patientId: string }) {
               <Tooth
                 key={n}
                 number={n}
-                condition={byTooth.get(n)?.condition ?? 'healthy'}
+                conditions={byTooth.get(n)?.conditions ?? ['healthy']}
                 hasPlanned={!!byTooth.get(n)?.planned_treatment}
                 onClick={() => setSelectedTooth(n)}
               />
@@ -86,7 +86,7 @@ export function ToothChart({ patientId }: { patientId: string }) {
               <Tooth
                 key={n}
                 number={n}
-                condition={byTooth.get(n)?.condition ?? 'healthy'}
+                conditions={byTooth.get(n)?.conditions ?? ['healthy']}
                 hasPlanned={!!byTooth.get(n)?.planned_treatment}
                 onClick={() => setSelectedTooth(n)}
               />

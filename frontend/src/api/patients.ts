@@ -90,7 +90,7 @@ export const patientsApi = {
       }
     }
     for (const tr of toothRecords) {
-      events.push({ type: 'tooth_update', at: tr.recorded_at, title: `Tooth #${tr.tooth_number}: ${tr.condition}`, detail: tr.notes || '', ref_id: tr.id });
+      events.push({ type: 'tooth_update', at: tr.recorded_at, title: `Tooth #${tr.tooth_number}: ${tr.conditions.join(', ')}`, detail: tr.notes || '', ref_id: tr.id });
     }
     if (patient) {
       events.push({ type: 'patient_registered', at: patient.created_at, title: 'Patient registered', detail: `${patient.first_name} ${patient.last_name}`, ref_id: id });

@@ -20,7 +20,7 @@ interface ToothDetailModalProps {
   doctors: Doctor[];
   onSave: (data: {
     tooth_number: string;
-    condition: ToothCondition;
+    conditions: ToothCondition[];
     existing_treatment: string;
     planned_treatment: string;
     notes: string;
@@ -30,7 +30,7 @@ interface ToothDetailModalProps {
 
 export function ToothDetailModal({ open, onClose, toothNumber, current, history, doctors, onSave }: ToothDetailModalProps) {
   const { session } = useSession();
-  const [condition, setCondition] = useState<ToothCondition>(current?.condition ?? 'healthy');
+  const [conditions, setConditions] = useState<ToothCondition[]>(current?.conditions ?? ['healthy']);
   const [existingTreatment, setExistingTreatment] = useState(current?.existing_treatment ?? '');
   const [plannedTreatment, setPlannedTreatment] = useState(current?.planned_treatment ?? '');
   const [notes, setNotes] = useState(current?.notes ?? '');
@@ -38,12 +38,21 @@ export function ToothDetailModal({ open, onClose, toothNumber, current, history,
   const [saving, setSaving] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
+  function toggleCondition(c: ToothCondition) {
+    setConditions((prev) => {
+      if (c === 'healthy') return ['healthy'];
+      const withoutHealthy = prev.filter((p) => p !== 'healthy');
+      const next = withoutHealthy.includes(c) ? withoutHealthy.filter((p) => p !== c) : [...withoutHealthy, c];
+      return next.length === 0 ? ['healthy'] : next;
+    });
+  }
+
   async function handleSave() {
     setSaving(true);
     try {
       await onSave({
         tooth_number: toothNumber,
-        condition,
+        conditions,
         existing_treatment: existingTreatment,
         planned_treatment: plannedTreatment,
         notes,
@@ -70,26 +79,30 @@ export function ToothDetailModal({ open, onClose, toothNumber, current, history,
       <div className="space-y-4">
         <div className="space-y-3">
           <label className={LABEL_CLASS}>Condition</label>
+          <p className="-mt-1 text-xs text-ink-400">Select one or more - e.g. a Condition code and a Restoration code can both apply to the same tooth.</p>
           {CONDITION_GROUPS.map((group) => (
             <div key={group.title}>
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-400">{group.title}</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {group.options.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCondition(c)}
-                    style={condition === c ? { backgroundColor: CONDITION_META[c].color, color: CONDITION_META[c].textColor } : undefined}
-                    className={`flex items-center gap-1.5 rounded-lg border px-2 py-2.5 text-left text-xs font-medium sm:text-sm ${
-                      condition === c ? 'border-transparent ring-2 ring-brand-400' : 'border-ink-200 text-ink-600 hover:bg-ink-50'
-                    }`}
-                  >
-                    {CONDITION_META[c].code && (
-                      <span className="shrink-0 rounded bg-black/10 px-1 text-[10px] font-bold">{CONDITION_META[c].code}</span>
-                    )}
-                    <span className="truncate">{CONDITION_META[c].label}</span>
-                  </button>
-                ))}
+                {group.options.map((c) => {
+                  const selected = conditions.includes(c);
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => toggleCondition(c)}
+                      style={selected ? { backgroundColor: CONDITION_META[c].color, color: CONDITION_META[c].textColor } : undefined}
+                      className={`flex items-center gap-1.5 rounded-lg border px-2 py-2.5 text-left text-xs font-medium sm:text-sm ${
+                        selected ? 'border-transparent ring-2 ring-brand-400' : 'border-ink-200 text-ink-600 hover:bg-ink-50'
+                      }`}
+                    >
+                      {CONDITION_META[c].code && (
+                        <span className="shrink-0 rounded bg-black/10 px-1 text-[10px] font-bold">{CONDITION_META[c].code}</span>
+                      )}
+                      <span className="truncate">{CONDITION_META[c].label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -131,7 +144,11 @@ export function ToothDetailModal({ open, onClose, toothNumber, current, history,
                 {history.map((h) => (
                   <li key={h.id} className="flex items-start justify-between gap-2 text-sm">
                     <div>
-                      <Badge tone="neutral">{CONDITION_META[h.condition].label}</Badge>
+                      <div className="flex flex-wrap gap-1">
+                        {h.conditions.map((c) => (
+                          <Badge key={c} tone="neutral">{CONDITION_META[c].label}</Badge>
+                        ))}
+                      </div>
                       {h.notes && <p className="mt-1 text-ink-500">{h.notes}</p>}
                     </div>
                     <span className="shrink-0 text-xs text-ink-400">{formatDateTime(h.recorded_at)}</span>

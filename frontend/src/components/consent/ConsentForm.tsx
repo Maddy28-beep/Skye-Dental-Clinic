@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { Check } from 'lucide-react';
 import { SignaturePad } from './SignaturePad';
 import { Button } from '../common/Button';
 import type { Consent, ConsentAnesthesia, ConsentSection } from '../../types';
 import { ORAL_SURGERY_RISKS } from '../../lib/consentTemplates';
+import { initialsFromFullName } from '../../lib/format';
 
 interface ConsentSignFormProps {
   consent: Consent;
@@ -35,8 +37,12 @@ export function ConsentSignForm({ consent, defaultName, isMinor, onSubmit, onCan
 
   const isGeneral = consent.template === 'general';
 
-  function setInitial(key: string, value: string) {
-    setSections((prev) => prev.map((s) => (s.key === key ? { ...s, initials: value } : s)));
+  const computedInitials = initialsFromFullName(signedName);
+
+  function toggleInitial(key: string) {
+    setSections((prev) =>
+      prev.map((s) => (s.key === key ? { ...s, initials: s.initials?.trim() ? '' : computedInitials } : s))
+    );
   }
 
   async function handleSubmit() {
@@ -68,22 +74,54 @@ export function ConsentSignForm({ consent, defaultName, isMinor, onSubmit, onCan
     <div className="space-y-4">
       <p className="text-sm font-medium text-ink-700">Dental Treatment Consent &mdash; {consent.procedure_name}</p>
 
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink-700">Patient (or Guardian) Full Name</label>
+          <input className={FIELD_CLASS} value={signedName} onChange={(e) => setSignedName(e.target.value)} />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink-700">Witness / Interpreter (optional)</label>
+          <input className={FIELD_CLASS} value={witnessName} onChange={(e) => setWitnessName(e.target.value)} />
+        </div>
+      </div>
+
       {isGeneral ? (
-        <div className="max-h-64 space-y-3 overflow-y-auto rounded-xl border border-ink-200 bg-ink-50 p-3">
-          {sections.map((s) => (
-            <div key={s.key} className="flex items-start gap-2 border-b border-ink-100 pb-2 last:border-0 last:pb-0">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-ink-700">{s.label}</p>
-                <p className="text-xs leading-relaxed text-ink-500">{s.text}</p>
-              </div>
-              <input
-                value={s.initials ?? ''}
-                onChange={(e) => setInitial(s.key, e.target.value.toUpperCase().slice(0, 4))}
-                placeholder="Initial"
-                className="w-16 shrink-0 rounded-lg border border-ink-300 bg-white px-2 py-1.5 text-center text-xs font-semibold outline-none focus:border-brand-500"
-              />
-            </div>
-          ))}
+        <div>
+          <p className="mb-2 text-xs text-ink-400">
+            Tap "Initial" to mark each section as read and acknowledged &mdash; no typing needed, it uses the name entered above ({computedInitials || '—'}).
+          </p>
+          <div className="max-h-64 space-y-3 overflow-y-auto rounded-xl border border-ink-200 bg-ink-50 p-3">
+            {sections.map((s) => {
+              const done = !!s.initials?.trim();
+              return (
+                <div key={s.key} className="flex items-start gap-2 border-b border-ink-100 pb-2 last:border-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-ink-700">{s.label}</p>
+                    <p className="text-xs leading-relaxed text-ink-500">{s.text}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleInitial(s.key)}
+                    disabled={!computedInitials}
+                    title={!computedInitials ? 'Enter the patient/guardian name above first' : undefined}
+                    className={`flex w-20 shrink-0 items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      done
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-ink-300 bg-white text-ink-500 hover:border-brand-400 hover:text-brand-600'
+                    }`}
+                  >
+                    {done ? (
+                      <>
+                        <Check size={13} /> {s.initials}
+                      </>
+                    ) : (
+                      'Initial'
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className="max-h-64 overflow-y-auto rounded-xl border border-ink-200 bg-ink-50 p-3 text-xs leading-relaxed text-ink-600">
@@ -114,17 +152,6 @@ export function ConsentSignForm({ consent, defaultName, isMinor, onSubmit, onCan
           </div>
         </div>
       )}
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-ink-700">Patient (or Guardian) Full Name</label>
-          <input className={FIELD_CLASS} value={signedName} onChange={(e) => setSignedName(e.target.value)} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-ink-700">Witness / Interpreter (optional)</label>
-          <input className={FIELD_CLASS} value={witnessName} onChange={(e) => setWitnessName(e.target.value)} />
-        </div>
-      </div>
 
       {(isMinor || !isGeneral) && (
         <div>
