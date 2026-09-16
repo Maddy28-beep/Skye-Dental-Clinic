@@ -1,8 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
-import { Stethoscope, MapPin } from 'lucide-react';
+import { Stethoscope } from 'lucide-react';
 import { NAV_ITEMS } from './navConfig';
-import { CLINIC_INFO } from '../../lib/clinicInfo';
 
 export function Sidebar({
   collapsedLabels = false,
@@ -21,12 +20,12 @@ export function Sidebar({
         </div>
       ) : (
         <div className="shrink-0 border-b border-ink-100">
-          {/* Square source image (1254x1254) - aspect-square + object-contain shows it in
-              full, uncropped, rather than guessing a crop window that cuts off the logo. */}
+          {/* Square source image (1254x1254) - object-contain keeps it uncropped; height
+              is capped so the logo doesn't dominate the sidebar. */}
           <img
             src="/skye%20logo.png"
             alt="Skye Dental Clinic"
-            className="aspect-square w-full object-contain"
+            className="h-24 w-full object-contain py-2"
           />
           <p className="px-4 py-1.5 text-center text-[11px] font-medium tracking-wide text-ink-400">Clinic Monitoring System</p>
         </div>
@@ -53,15 +52,6 @@ export function Sidebar({
           </NavLink>
         ))}
       </nav>
-
-      {!collapsedLabels && (
-        <div className="border-t border-ink-100 p-4 text-xs text-ink-400">
-          <div className="flex items-start gap-1.5">
-            <MapPin size={13} className="mt-0.5 shrink-0" />
-            <span>{CLINIC_INFO.address}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
