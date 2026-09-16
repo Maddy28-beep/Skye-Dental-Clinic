@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "skye-dental-demo",
+    "demo": "skye-dental-demo",
+    "production": "skye-dental-clinic"
+  }
+}

@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment / secrets - Firebase's client config isn't a true secret (it ends up in the
+# built JS anyway), but keep it out of git regardless: it shouldn't need to be public
+# before the project is ready, and this is also where a real secret (a service account
+# key, if one is ever added) would go if we're not careful. Never remove these lines to
+# "fix" a env-file-not-found problem - recreate the file locally instead.
+.env
+.env.local
+.env.*.local
+*.local
+**/serviceAccountKey*.json
+**/*-firebase-adminsdk-*.json
+
+# Local databases / runtime artifacts
+backend/dental.db
+backend/dental.db-shm
+backend/dental.db-wal
+
+# Firebase local emulator / CLI artifacts
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+emulator-stdout.log
+emulator-stderr.log
+
+# Vercel local project link
+.vercel
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db

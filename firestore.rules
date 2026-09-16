@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Doctor PIN hashes: never readable or writable from the client under any
+    // circumstance. Only Cloud Functions (Admin SDK, which bypasses these rules
+    // entirely) may touch this collection - that's what makes the PIN check trustworthy.
+    match /doctor_secrets/{doctorId} {
+      allow read, write: if false;
+    }
+
+    // Doctor public profile (name/specialty/active) - readable by any signed-in staff,
+    // but all writes go through Cloud Functions so a PIN change always re-hashes correctly.
+    match /doctors/{doctorId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // Staff login accounts (role/name), keyed by Firebase Auth uid. Created only via the
+    // createStaffAccount Cloud Function so role assignment can't be self-granted.
+    match /staff/{uid} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /patients/{patientId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /medical_histories/{patientId} {
+      allow read, create, update: if signedIn();
+    }
+
+    match /dental_exams/{patientId} {
+      allow read, create, update: if signedIn();
+    }
+
+    match /tooth_records/{recordId} {
+      allow read, create: if signedIn();
+      allow update, delete: if false; // append-only history
+    }
+
+    match /treatments/{treatmentId} {
+      allow read, create, update: if signedIn();
+    }
+
+    // Payments can be created as 'pending' by any staff member, but the status can never
+    // be changed by a direct client write - only the verifyPayment Cloud Function (which
+    // checks a doctor's PIN server-side) is allowed to move a payment to 'verified'.
+    match /payments/{paymentId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.status == 'pending';
+      allow update: if signedIn()
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'pending';
+    }
+
+    // Consents are immutable once signed - a direct client write can create or edit a
+    // draft, but can never modify a document whose status is already 'signed'.
+    match /consents/{consentId} {
+      allow read, create: if signedIn();
+      allow update: if signedIn() && resource.data.status != 'signed';
+    }
+
+    // Audit trail: the security-critical entries (PIN lockouts, payment verification) are
+    // written server-side by Cloud Functions (Admin SDK, bypasses these rules). Routine
+    // CRUD activity is logged by the client itself - entries can be created but never
+    // edited or deleted once written, so the trail can still only grow, not be rewritten.
+    match /audit_logs/{logId} {
+      allow read, create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    match /counters/{counterId} {
+      allow read, write: if signedIn();
+    }
+  }
+}

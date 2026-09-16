@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Matched to the clinic's actual accent wall + chair upholstery (bright cyan-turquoise),
+     not a generic medical teal. */
+  --color-brand-50: #eafcfb;
+  --color-brand-100: #cef7f4;
+  --color-brand-200: #9deeea;
+  --color-brand-300: #64dcd8;
+  --color-brand-400: #34c2c0;
+  --color-brand-500: #1ba6a6;
+  --color-brand-600: #148589;
+  --color-brand-700: #146a6e;
+  --color-brand-800: #15555a;
+  --color-brand-900: #15474b;
+  --color-brand-950: #072a2d;
+
+  /* Warm off-white / wood-trim neutrals instead of a cool gray, to echo the cream walls
+     and mahogany trim in the clinic rather than a generic SaaS gray. */
+  --color-ink-50: #f8f6f2;
+  --color-ink-100: #efebe3;
+  --color-ink-200: #ddd5c7;
+  --color-ink-300: #bcb0a0;
+  --color-ink-400: #948577;
+  --color-ink-500: #766a5f;
+  --color-ink-600: #5e554c;
+  --color-ink-700: #4a433c;
+  --color-ink-800: #3a352f;
+  --color-ink-900: #302b27;
+  --color-ink-950: #1e1a17;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-ink-50);
+  color: var(--color-ink-900);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-ink-300);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Touch-friendly baseline: every interactive control keeps a minimum tap target on
+   touch clinic devices (tablets), per the responsive requirements. */
+button,
+[role="button"],
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@media (pointer: coarse) {
+  button,
+  a.tap-target,
+  [role="button"] {
+    min-height: 44px;
+  }
+}
